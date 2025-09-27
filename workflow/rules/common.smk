@@ -1,16 +1,6 @@
-# import basic packages
-import pandas as pd
+# Common setup and validation for xOPR workflow
+
 from snakemake.utils import validate
 
-
-# read sample sheet
-samples = (
-    pd.read_csv(config["samplesheet"], sep="\t", dtype={"sample": str})
-    .set_index("sample", drop=False)
-    .sort_index()
-)
-
-
-# validate sample sheet and config file
-validate(samples, schema="../../config/schemas/samples.schema.yaml")
+# validate config file
 validate(config, schema="../../config/schemas/config.schema.yaml")

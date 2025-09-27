@@ -1,37 +1,51 @@
-# Main entrypoint of the workflow.
-# Please follow the best practices:
-# https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
-# in particular regarding the standardized folder structure mentioned there.
-
+# Main entrypoint of the xOPR radar processing workflow
 
 # load configuration
-# -----------------------------------------------------
 configfile: "config/config.yaml"
 
-
 # load rules
-# -----------------------------------------------------
 include: "rules/common.smk"
-include: "rules/process_reads.smk"
+include: "rules/xopr_data_access.smk"
+include: "rules/radar_processing.smk"
 
-
-# optional messages, log and error handling
-# -----------------------------------------------------
+# optional messages
 onstart:
-    print("\n--- Analysis started ---\n")
-
+    print("\n--- xOPR Radar Processing Analysis started ---\n")
 
 onsuccess:
-    print("\n--- Workflow finished! ---\n")
-
+    print("\n--- Workflow finished successfully! ---\n")
 
 onerror:
     print("\n--- An error occurred! ---\n")
 
-
 # target rules
-# -----------------------------------------------------
 rule all:
     input:
-        "results/multiqc/multiqc_report.html",
+        # Core outputs
+        "results/region/selected_region.geojson",
+        "results/search/frame_items.json",
+        "results/merged/merged_dataset.nc" if config["output"]["merge_frames"] else [],
+        # Visualizations (conditional on config)
+        "results/visualizations/frame_coverage_map.html" if config["visualization"]["create_maps"] else [],
+        "results/visualizations/results_map.html" if config["visualization"]["create_maps"] else [],
     default_target: True
+
+# Alternative targets for specific outputs
+rule search_only:
+    """Run only region selection and frame search."""
+    input:
+        "results/region/selected_region.geojson",
+        "results/search/frame_items.json",
+
+rule process_only:
+    """Run processing without visualizations."""
+    input:
+        "results/merged/merged_dataset.nc" if config["output"]["merge_frames"] else
+        expand("results/processed_frames/frame_{frame_idx}.nc", 
+               frame_idx=range(get_frame_count() if "results/search/frame_items.json" else 0)),
+
+rule visualize_only:
+    """Create only visualizations."""
+    input:
+        "results/visualizations/frame_coverage_map.html",
+        "results/visualizations/results_map.html",
