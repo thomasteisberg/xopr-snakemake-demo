@@ -12,7 +12,7 @@ region:
 
 # Frame search parameters
 search:
-  max_items: null  # Maximum frames to process (null for all)
+  max_items: 10  # Maximum frames to process (null for all)
 
 # Processing parameters
 processing:
