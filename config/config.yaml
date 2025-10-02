@@ -2,7 +2,7 @@
 
 # OPR connection settings
 opr:
-  cache_dir: "/home/thomasteisberg/Documents/opr/xopr/docs/notebooks/radar_cache"
+  cache_dir: null #"/home/thomasteisberg/Documents/opr/xopr/docs/notebooks/radar_cache"
 
 # Region selection parameters (using MEaSUREs Antarctic dataset)
 region:
