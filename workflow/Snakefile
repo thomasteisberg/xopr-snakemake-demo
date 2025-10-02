@@ -5,7 +5,6 @@ configfile: "config/config.yaml"
 
 # load rules
 include: "rules/common.smk"
-include: "rules/xopr_data_access.smk"
 include: "rules/radar_processing.smk"
 
 # optional messages
