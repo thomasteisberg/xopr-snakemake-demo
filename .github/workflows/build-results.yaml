@@ -1,9 +1,9 @@
 name: Build and Deploy Results
 
 on:
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
   workflow_dispatch:  # Allow manual triggering
 
 permissions:
@@ -30,7 +30,7 @@ jobs:
           directory: .
           snakefile: workflow/Snakefile
           args: >-
-            --sdm conda
+            --sdm conda --cores 4
 
       - name: Generate Snakemake report as index page
         uses: snakemake/snakemake-github-action@v2
