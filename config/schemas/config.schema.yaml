@@ -6,7 +6,7 @@ properties:
     type: object
     properties:
       cache_dir:
-        type: string
+        type: ["string", "null"]
         description: Directory for caching OPR data
       stac_api_url:
         type: ["string", "null"]
