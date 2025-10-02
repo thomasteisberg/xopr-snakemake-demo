@@ -1,5 +1,3 @@
-import geopandas as gpd
-
 # Rules for radar data processing workflow
 
 rule select_region:
@@ -26,6 +24,7 @@ checkpoint search_frames:
     output:
         frames="results/search/frame_items.parquet",
         summary="results/search/search_summary.txt",
+        frame_ids="results/search/frame_ids.txt",
     params:
         cache_dir=config["opr"]["cache_dir"],
         max_items=config["search"]["max_items"],
@@ -96,15 +95,15 @@ rule create_results_map:
         "../scripts/create_results_map.py"
 
 
-# Helper function to get frame count
+# Helper function to get frame IDs
 def get_frame_ids():
-    """Get number of frames to process from search results."""
+    """Get frame IDs from search results."""
     import os
 
-    frames_file = "results/search/frame_items.parquet"
+    frame_ids_file = "results/search/frame_ids.txt"
 
-    if os.path.exists(frames_file):
-        frames = gpd.read_parquet(frames_file)
-        return frames.index.tolist()
+    if os.path.exists(frame_ids_file):
+        with open(frame_ids_file, 'r') as f:
+            return [line.strip() for line in f if line.strip()]
     else:
         return []

@@ -7,6 +7,7 @@ import geopandas as gpd
 input_region = snakemake.input.region
 output_frames = snakemake.output.frames
 output_summary = snakemake.output.summary
+output_frame_ids = snakemake.output.frame_ids
 log_file = snakemake.log[0]
 
 # Parameters
@@ -33,6 +34,11 @@ try:
 
     # Save as Parquet (preserves GeoDataFrame structure)
     stac_items.to_parquet(output_frames)
+
+    # Save frame IDs to text file (one per line)
+    with open(output_frame_ids, 'w') as f:
+        for frame_id in stac_items.index:
+            f.write(f"{frame_id}\n")
 
     # Create summary
     summary_lines = [

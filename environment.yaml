@@ -1,9 +1,7 @@
 name: snakemake
 channels:
+  - bioconda
   - conda-forge
 dependencies:
   - python
   - snakemake
-  - geopandas
-  - pandas
-  - pyarrow

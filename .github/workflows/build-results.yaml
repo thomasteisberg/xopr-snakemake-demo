@@ -24,31 +24,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Mambaforge
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          miniforge-variant: Mambaforge
-          miniforge-version: latest
-          activate-environment: snakemake
-          use-mamba: true
-
-      - name: Install Snakemake
-        shell: bash -l {0}
-        run: |
-          mamba install -c conda-forge -c bioconda snakemake snakemake-minimal -y
-
       - name: Run Snakemake workflow
-        uses: snakemake/snakemake-github-action@v1
+        uses: snakemake/snakemake-github-action@v2
         with:
           directory: .
           snakefile: workflow/Snakefile
           args: >-
-            --cores 2
-            --use-conda
-            --conda-frontend mamba
-            --show-failed-logs
-            --printshellcmds
-            --verbose
+            --sdm conda
 
       - name: Create index.html for GitHub Pages
         shell: bash
