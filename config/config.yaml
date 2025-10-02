@@ -3,7 +3,6 @@
 # OPR connection settings
 opr:
   cache_dir: "/home/thomasteisberg/Documents/opr/xopr/docs/notebooks/radar_cache"
-  stac_api_url: null  # Use default if null
 
 # Region selection parameters (using MEaSUREs Antarctic dataset)
 region:
@@ -11,20 +10,20 @@ region:
   type: "FL"      # Type: GR (grounded), FL (floating), IS (island), or null for all
   regions: null   # Regions: Peninsula, West, East, or null for all
 
-# Frame search parameters  
+# Frame search parameters
 search:
-  max_items: 10  # Maximum frames to process (null for all)
+  max_items: null  # Maximum frames to process (null for all)
 
 # Processing parameters
 processing:
   data_product: "CSARP_standard"  # Data product to load
   resample_interval: "5s"  # Temporal resampling interval
   layer_margin_m: 50  # Margin around layers for peak detection (meters)
+  create_debug_plots: true  # Create debug plots showing surface/bed power for each frame
   
 # Output settings
 output:
   format: "netcdf"  # Output format: netcdf or zarr
-  merge_frames: true  # Whether to merge all frames into single dataset
   
 # Visualization settings
 visualization:

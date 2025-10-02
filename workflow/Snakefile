@@ -23,8 +23,6 @@ rule all:
     input:
         # Core outputs
         "results/region/selected_region.geojson",
-        "results/search/frame_items.json",
-        "results/merged/merged_dataset.nc" if config["output"]["merge_frames"] else [],
         # Visualizations (conditional on config)
         "results/visualizations/frame_coverage_map.html" if config["visualization"]["create_maps"] else [],
         "results/visualizations/results_map.html" if config["visualization"]["create_maps"] else [],
@@ -35,17 +33,4 @@ rule search_only:
     """Run only region selection and frame search."""
     input:
         "results/region/selected_region.geojson",
-        "results/search/frame_items.json",
-
-rule process_only:
-    """Run processing without visualizations."""
-    input:
-        "results/merged/merged_dataset.nc" if config["output"]["merge_frames"] else
-        expand("results/processed_frames/frame_{frame_idx}.nc", 
-               frame_idx=range(get_frame_count() if "results/search/frame_items.json" else 0)),
-
-rule visualize_only:
-    """Create only visualizations."""
-    input:
         "results/visualizations/frame_coverage_map.html",
-        "results/visualizations/results_map.html",

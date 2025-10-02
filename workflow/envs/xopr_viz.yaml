@@ -3,8 +3,16 @@ channels:
 dependencies:
   - python>=3.9
   - pip
+  - numpy
+  - xarray
+  - pandas
   - geopandas
   - pyarrow
   - matplotlib
+  - cartopy
   - pip:
     - xopr
+    - hvplot
+    - geoviews
+    - bokeh
+    - holoviews

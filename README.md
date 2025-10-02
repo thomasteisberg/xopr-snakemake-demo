@@ -1,71 +1,149 @@
-# Snakemake workflow: `<name>`
+# Snakemake workflow: xOPR Radar Processing
 
 [![Snakemake](https://img.shields.io/badge/snakemake-≥8.0.0-brightgreen.svg)](https://snakemake.github.io)
-[![GitHub actions status](https://github.com/<owner>/<repo>/workflows/Tests/badge.svg?branch=main)](https://github.com/<owner>/<repo>/actions?query=branch%3Amain+workflow%3ATests)
-[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
-[![workflow catalog](https://img.shields.io/badge/Snakemake%20workflow%20catalog-darkgreen)](https://snakemake.github.io/snakemake-workflow-catalog/docs/workflows/<owner>/<repo>)
+[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049.svg?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 
-A Snakemake workflow for `<description>`
+A Snakemake workflow demonstrating the use of xOPR (Open Polar Radar) for ice-penetrating radar data analysis. This workflow replicates the analysis from the xOPR `search_and_scaling` notebook in a reproducible, parallelizable pipeline.
 
-- [Snakemake workflow: `<name>`](#snakemake-workflow-name)
-  - [Usage](#usage)
-  - [Deployment options](#deployment-options)
-  - [Authors](#authors)
-  - [References](#references)
-  - [TODO](#todo)
+## Overview
+
+This workflow includes the following steps:
+1. **Region Selection**: Select a geographic region of interest from Antarctica
+2. **Frame Search**: Find radar frames intersecting the selected region
+3. **Parallel Processing**: Extract surface and bed reflection powers from each frame
+5. **Visualization**: Create interactive maps of frame coverage and results
+
+## Table of Contents
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Output Structure](#output-structure)
+- [Parallelization](#parallelization)
+- [Authors](#authors)
+- [References](#references)
+
+## Installation
+
+1. Clone this repository:
+```bash
+git clone https://github.com/thomasteisberg/xopr-snakemake-demo
+cd xopr-snakemake-demo
+```
+
+2. Setup a conda/mamba environment (if not already installed):
+```bash
+mamba env create -n snakemake -f environment.yaml
+mamba activate snakemake
+```
 
 ## Usage
 
-The usage of this workflow is described in the [Snakemake Workflow Catalog](https://snakemake.github.io/snakemake-workflow-catalog/docs/workflows/<owner>/<repo>).
-
-Detailed information about input data and workflow configuration can also be found in the [`config/README.md`](config/README.md).
-
-If you use this workflow in a paper, don't forget to give credits to the authors by citing the URL of this repository or its DOI.
-
-## Deployment options
-
-To run the workflow from command line, change the working directory.
+### Quick Start
 
 ```bash
-cd path/to/snakemake-workflow-name
-```
+# Activate snakemake environment
+mamba activate snakemake
 
-Adjust options in the default config file `config/config.yaml`.
-Before running the complete workflow, you can perform a dry run using:
-
-```bash
+# Dry run to preview execution plan
 snakemake --dry-run
+
+# Run complete workflow (use multiple cores for parallel processing)
+snakemake --cores 4 --sdm conda
 ```
 
-To run the workflow with test files using **conda**:
+### Other options:
+
+**Search only workflow:**
+
+This workflow runs only the geographic select and frame search parts of the workflow, 
+producing a map of where data has been found without actually processing any of it.
 
 ```bash
-snakemake --cores 2 --sdm conda --directory .test
+# Only search for frames (no processing)
+snakemake search_only --sdm conda
 ```
 
-To run the workflow with **apptainer** / **singularity**, add a link to a container registry in the `Snakefile`, for example `container: "oras://ghcr.io/<user>/<repository>:<version>"` for Github's container registry.
-Run the workflow with:
+**Clearing results:**
+
+This will delete all results files that would be created by the current workflow:
 
 ```bash
-snakemake --cores 2 --sdm conda apptainer --directory .test
+# Delete current results files
+snakemake --delete-all-output
 ```
 
-## Authors
+**Workflow visualization:**
 
-- Firstname Lastname
-  - Affiliation
-  - ORCID profile
-  - home page
+Generate visual representations of the workflow:
+
+```bash
+# Generate workflow DAG
+snakemake --dag | dot -Tpng > workflow_dag.png
+
+# Generate rule graph
+snakemake --rulegraph | dot -Tpng > workflow_rules.png
+```
+
+## Configuration
+
+Edit `config/config.yaml` to customize your analysis:
+
+```yaml
+# OPR connection settings
+opr:
+  cache_dir: "/path/to/cache"  # Local cache for downloaded data
+
+# Region selection (MEaSUREs Antarctic dataset)
+region:
+  name: "Dotson"    # Region name (e.g., "Dotson", "George_VI", "LarsenC")
+  type: "FL"        # Type: FL (floating), GR (grounded), IS (island)
+  regions: null     # Geographic regions: Peninsula, West, East
+
+# Frame search parameters
+search:
+  max_items: 10     # Maximum frames to process (null for all)
+
+# Processing parameters
+processing:
+  data_product: "CSARP_standard"  # Radar data product
+  resample_interval: "5s"         # Temporal resampling
+  layer_margin_m: 50               # Margin around layers (meters)
+
+# Output settings
+output:
+  format: "netcdf"      # Output format: netcdf or zarr
+
+# Visualization settings
+visualization:
+  create_maps: true         # Create interactive maps
+  create_plots: true        # Create static plots
+  projection: "EPSG:3031"   # Map projection (3031: Antarctic, 3413: Greenland)
+```
+
+## Output Structure
+
+The workflow generates the following output structure:
+
+```
+results/
+├── region/                 # Selected region
+│   ├── selected_region.geojson
+│   └── region_metadata.json
+├── search/                 # Frame search results
+│   ├── frame_items.json
+│   └── search_summary.txt
+├── processed_frames/       # Individual processed frames
+│   ├── frame_0.nc
+│   ├── frame_1.nc
+│   └── ...
+├── merged/                 # Combined dataset
+│   └── merged_dataset.nc
+└── visualizations/         # Interactive HTML maps
+    ├── frame_coverage_map.html
+    └── results_map.html
+```
 
 ## References
 
-> Köster, J., Mölder, F., Jablonski, K. P., Letcher, B., Hall, M. B., Tomkins-Tinch, C. H., Sochat, V., Forster, J., Lee, S., Twardziok, S. O., Kanitz, A., Wilm, A., Holtgrewe, M., Rahmann, S., & Nahnsen, S. _Sustainable data analysis with Snakemake_. F1000Research, 10:33, 10, 33, **2021**. https://doi.org/10.12688/f1000research.29032.2.
-
-## TODO
-
-- Replace `<owner>` and `<repo>` everywhere in the template with the correct user name/organization, and the repository name. The workflow will be automatically added to the [snakemake workflow catalog](https://snakemake.github.io/snakemake-workflow-catalog/index.html) once it is publicly available on Github.
-- Replace `<name>` with the workflow name (can be the same as `<repo>`).
-- Replace `<description>` with a description of what the workflow does.
-- Update the [deployment](#deployment-options), [authors](#authors) and [references](#references) sections.
-- Update the `README.md` badges. Add or remove badges for `conda`/`singularity`/`apptainer` usage depending on the workflow's [deployment](#deployment-options) options.
-- Do not forget to also adjust the configuration-specific `config/README.md` file.
+- [xOPR Package](https://github.com/thomasteisberg/xopr) - Python library for Open Polar Radar data access
+- [Open Polar Radar](https://data.openradardata.org/) - Ice-penetrating radar data repository
