@@ -1,0 +1,1 @@
+Interactive map displaying the processed radar results, including surface and bed reflection power measurements for each frame. The map shows the merged dataset with color-coded values indicating signal strength and data quality across the study region. This visualization enables spatial analysis of ice-penetrating radar characteristics.

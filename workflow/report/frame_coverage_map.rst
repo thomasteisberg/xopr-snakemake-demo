@@ -1,0 +1,1 @@
+Interactive map showing the geographic coverage of radar frames that intersect the selected region. Each frame's footprint is displayed with its collection and temporal information. This visualization helps understand the spatial distribution and density of available radar data over the study area.

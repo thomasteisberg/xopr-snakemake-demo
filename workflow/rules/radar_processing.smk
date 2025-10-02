@@ -64,7 +64,10 @@ rule create_frame_map:
         region="results/region/selected_region.geojson",
         frames="results/search/frame_items.parquet",
     output:
-        "results/visualizations/frame_coverage_map.html",
+        report("results/visualizations/frame_coverage_map.html",
+               caption="../report/frame_coverage_map.rst",
+               category="Visualizations",
+               subcategory="Frame Coverage"),
     params:
         projection=config["visualization"]["projection"],
     conda:
@@ -84,7 +87,10 @@ rule create_results_map:
             "results/processed_frames/frame_{frame_id}.nc",
             frame_id=get_frame_ids()),
     output:
-        "results/visualizations/results_map.html",
+        report("results/visualizations/results_map.html",
+               caption="../report/results_map.rst",
+               category="Visualizations",
+               subcategory="Results"),
     params:
         projection=config["visualization"]["projection"],
     conda:
