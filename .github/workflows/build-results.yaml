@@ -1,9 +1,9 @@
 name: Build and Deploy Results
 
 on:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   workflow_dispatch:  # Allow manual triggering
 
 permissions:
