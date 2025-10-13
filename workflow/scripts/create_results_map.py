@@ -10,7 +10,7 @@ import xopr.geometry
 
 # Snakemake inputs/outputs
 input_region = snakemake.input.region
-frame_files = snakemake.input.frames
+segment_files = snakemake.input.segments
 status_files = snakemake.input.status_files
 output_map = snakemake.output[0]
 log_file = snakemake.log[0]
@@ -23,36 +23,36 @@ sys.stderr = open(log_file, 'w')
 try:
     print(f"Creating results map...", file=sys.stderr)
 
-    # Filter successful frames
-    successful_frames = []
-    failed_frames = []
+    # Filter successful segments
+    successful_segments = []
+    failed_segments = []
 
-    for frame_file, status_file in zip(frame_files, status_files):
+    for segment_file, status_file in zip(segment_files, status_files):
         with open(status_file, 'r') as f:
             status = f.read().strip()
 
         if status == "success":
-            successful_frames.append(frame_file)
+            successful_segments.append(segment_file)
         else:
-            # Extract frame ID from filename for logging
-            frame_id = frame_file.split('frame_')[1].replace('.nc', '')
-            failed_frames.append((frame_id, status))
+            # Extract segment path from filename for logging
+            segment_path = segment_file.split('segment_surfbed_')[1].replace('.nc', '')
+            failed_segments.append((segment_path, status))
 
-    print(f"\nFrame processing summary:", file=sys.stderr)
-    print(f"  Total frames: {len(frame_files)}", file=sys.stderr)
-    print(f"  Successful: {len(successful_frames)}", file=sys.stderr)
-    print(f"  Failed: {len(failed_frames)}", file=sys.stderr)
+    print(f"\nSegment processing summary:", file=sys.stderr)
+    print(f"  Total segments: {len(segment_files)}", file=sys.stderr)
+    print(f"  Successful: {len(successful_segments)}", file=sys.stderr)
+    print(f"  Failed: {len(failed_segments)}", file=sys.stderr)
 
-    if failed_frames:
-        print(f"\nFailed frames:", file=sys.stderr)
-        for frame_id, status in failed_frames:
-            print(f"  - {frame_id}: {status}", file=sys.stderr)
+    if failed_segments:
+        print(f"\nFailed segments:", file=sys.stderr)
+        for segment_path, status in failed_segments:
+            print(f"  - {segment_path}: {status}", file=sys.stderr)
 
-    # Use only successful frames for visualization
-    frame_files = successful_frames
+    # Use only successful segments for visualization
+    segment_files = successful_segments
 
-    if len(frame_files) == 0:
-        print(f"\nWarning: No successful frames to visualize!", file=sys.stderr)
+    if len(segment_files) == 0:
+        print(f"\nWarning: No successful segments to visualize!", file=sys.stderr)
         print(f"Creating empty map with region only...", file=sys.stderr)
 
     # Set up projection
@@ -85,10 +85,10 @@ try:
         scalebar=True
     )
     
-    # Load merged dataset
+    # Load segment datasets
     data_lines = []
-    if len(frame_files) > 0:
-        for ds_fn in frame_files:
+    if len(segment_files) > 0:
+        for ds_fn in segment_files:
             ds = xr.open_dataset(ds_fn)
             ds['bed_minus_surf'] = ds['bed_power_dB'] - ds['surface_power_dB']
             ds = ds.dropna(dim='slow_time')
@@ -121,8 +121,8 @@ try:
     # Print summary
     print(f"\nMap summary:", file=sys.stderr)
     print(f"  Region: Selected region", file=sys.stderr)
-    print(f"  Number of visualized datasets: {len(data_lines)}", file=sys.stderr)
-    print(f"  Number of failed frames: {len(failed_frames)}", file=sys.stderr)
+    print(f"  Number of visualized segments: {len(data_lines)}", file=sys.stderr)
+    print(f"  Number of failed segments: {len(failed_segments)}", file=sys.stderr)
     print(f"  Projection: {projection_str}", file=sys.stderr)
 
 except Exception as e:
