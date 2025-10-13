@@ -1,0 +1,1 @@
+Interactive map displaying englacial attenuation rates (dB/km) estimated using the adaptive windowing method. Attenuation rates are derived by decorrelating bed-returned power from ice thickness, providing constraints on ice temperature and chemistry. Typical values range from 5-30 dB/km, with higher values indicating warmer or more chemically impure ice.

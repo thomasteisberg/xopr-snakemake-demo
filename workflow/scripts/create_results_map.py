@@ -17,6 +17,13 @@ log_file = snakemake.log[0]
 
 # Parameters
 projection_str = snakemake.params.projection
+color_field = snakemake.params.color_field
+hover_fields = snakemake.params.get('hover_fields', [])
+map_title = snakemake.params.get('title', 'Results Map')
+color_label = snakemake.params.get('color_label', color_field)
+input_pattern = snakemake.params.get('input_pattern', 'segment_surfbed_')
+cmap = snakemake.params.get('cmap', 'turbo')
+clim = snakemake.params.get('clim', None)
 
 sys.stderr = open(log_file, 'w')
 
@@ -35,7 +42,7 @@ try:
             successful_segments.append(segment_file)
         else:
             # Extract segment path from filename for logging
-            segment_path = segment_file.split('segment_surfbed_')[1].replace('.nc', '')
+            segment_path = segment_file.split(input_pattern)[1].replace('.nc', '')
             failed_segments.append((segment_path, status))
 
     print(f"\nSegment processing summary:", file=sys.stderr)
@@ -90,13 +97,44 @@ try:
     if len(segment_files) > 0:
         for ds_fn in segment_files:
             ds = xr.open_dataset(ds_fn)
-            ds['bed_minus_surf'] = ds['bed_power_dB'] - ds['surface_power_dB']
+
+            # Create derived fields if needed (before checking if field exists)
+            if color_field == 'bed_minus_surf':
+                if 'bed_power_dB' in ds and 'surface_power_dB' in ds:
+                    ds['bed_minus_surf'] = ds['bed_power_dB'] - ds['surface_power_dB']
+                else:
+                    print(f"Warning: Cannot create bed_minus_surf in {ds_fn}, missing required fields", file=sys.stderr)
+                    continue
+
+            # Check if color field exists (after creating derived fields)
+            if color_field not in ds:
+                print(f"Warning: {color_field} not found in {ds_fn}, skipping", file=sys.stderr)
+                continue
+
             ds = ds.dropna(dim='slow_time')
             ds = xopr.geometry.project_dataset(ds, target_crs='EPSG:3031')
-            sc = ds.hvplot.scatter(x='x', y='y', c='bed_minus_surf',
-                                hover_cols=['surface_power_dB', 'bed_power_dB'],
-                                cmap='turbo', size=3)
-            #sc = sc.opts(scalebar=True)
+
+            # Build hvplot kwargs
+            plot_kwargs = {
+                'x': 'x',
+                'y': 'y',
+                'c': color_field,
+                'cmap': cmap,
+                'size': 3,
+            }
+
+            # Add hover fields if specified
+            if hover_fields:
+                plot_kwargs['hover_cols'] = hover_fields
+
+            # Add color limits if specified
+            if clim is not None:
+                plot_kwargs['clim'] = tuple(clim)
+
+            # Add color label
+            plot_kwargs['clabel'] = color_label
+
+            sc = ds.hvplot.scatter(**plot_kwargs)
             data_lines.append(sc)
 
     # Combine all elements
@@ -107,7 +145,7 @@ try:
 
     # Configure plot
     map_plot = map_plot.opts(
-        title=f"Reflection Power Results",
+        title=map_title,
         projection=projection,
         width=800,
         height=600,

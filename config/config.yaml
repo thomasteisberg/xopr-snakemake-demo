@@ -20,7 +20,17 @@ processing:
   resample_interval: "10s"  # Temporal resampling interval
   layer_margin_m: 50  # Margin around layers for peak detection (meters)
   create_debug_plots: true  # Create debug plots showing surface/bed power for each frame
-  
+
+# Attenuation and basal properties estimation
+attenuation:
+  ice_permittivity: 3.17  # Relative dielectric permittivity of ice
+  min_window_size_km: 20  # Minimum spatial window size for attenuation estimation
+  max_window_size_km: 300  # Maximum spatial window size
+  window_step_km: 5  # Window size increment
+  alpha_range_db_km: [1, 50]  # Range of attenuation rates to test (dB/km)
+  alpha_step_db_km: 0.5  # Attenuation rate step size
+  correlation_threshold: 0.01  # Convergence criterion for decorrelation
+
 # Output settings
 output:
   format: "netcdf"  # Output format: netcdf or zarr

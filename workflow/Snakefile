@@ -25,7 +25,11 @@ rule all:
         "results/region/selected_region.geojson",
         # Visualizations (conditional on config)
         "results/visualizations/frame_coverage_map.html" if config["visualization"]["create_maps"] else [],
-        "results/visualizations/results_map.html" if config["visualization"]["create_maps"] else [],
+        "results/visualizations/bed_power_map.html" if config["visualization"]["create_maps"] else [],
+        # Core results maps
+        "results/visualizations/bed_power_map.html",
+        "results/visualizations/basal_reflectivity_map.html",
+        "results/visualizations/attenuation_map.html",
     default_target: True
 
 # Alternative targets for specific outputs
@@ -34,3 +38,18 @@ rule search_only:
     input:
         "results/region/selected_region.geojson",
         "results/visualizations/frame_coverage_map.html",
+
+rule basal_analysis:
+    """Run full workflow including basal properties analysis and all maps."""
+    input:
+        "results/region/selected_region.geojson",
+        "results/visualizations/frame_coverage_map.html",
+        "results/visualizations/bed_power_map.html",
+        "results/visualizations/basal_reflectivity_map.html",
+        "results/visualizations/attenuation_map.html",
+        lambda wildcards: expand(
+            "results/basal_properties/basal_props_{chunk_path}.nc",
+            chunk_path=get_chunk_paths()),
+        lambda wildcards: expand(
+            "results/basal_properties/basal_props_{chunk_path}.png",
+            chunk_path=get_chunk_paths()),

@@ -1,0 +1,1 @@
+Interactive map displaying basal reflectivity across the study region. Basal reflectivity values (in dB) are derived from bed-returned power after geometric spreading and attenuation corrections, providing insights into subglacial interface properties. Higher reflectivity may indicate presence of water, sediments, or other basal conditions affecting ice dynamics.
