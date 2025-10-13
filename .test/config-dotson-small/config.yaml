@@ -20,11 +20,11 @@ processing:
   resample_interval: "5s"  # Temporal resampling interval
   layer_margin_m: 50  # Margin around layers for peak detection (meters)
   create_debug_plots: true  # Create debug plots showing surface/bed power for each frame
-  
+
 # Output settings
 output:
   format: "netcdf"  # Output format: netcdf or zarr
-  
+
 # Visualization settings
 visualization:
   create_maps: true  # Create interactive maps

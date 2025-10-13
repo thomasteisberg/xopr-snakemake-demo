@@ -1,0 +1,32 @@
+# xOPR radar data processing workflow configuration
+
+# OPR connection settings
+opr:
+  cache_dir: null
+
+# Region selection parameters (using MEaSUREs Antarctic dataset)
+region:
+  name: "Dotson"  # Region name(s) - can be string or list
+  type: "FL"      # Type: GR (grounded), FL (floating), IS (island), or null for all
+  regions: null   # Regions: Peninsula, West, East, or null for all
+
+# Frame search parameters
+search:
+  max_items: null  # Maximum frames to process (null for all)
+
+# Processing parameters
+processing:
+  data_product: "CSARP_standard"  # Data product to load
+  resample_interval: "5s"  # Temporal resampling interval
+  layer_margin_m: 50  # Margin around layers for peak detection (meters)
+  create_debug_plots: true  # Create debug plots showing surface/bed power for each frame
+
+# Output settings
+output:
+  format: "netcdf"  # Output format: netcdf or zarr
+
+# Visualization settings
+visualization:
+  create_maps: true  # Create interactive maps
+  create_plots: true  # Create static plots
+  projection: "EPSG:3031"  # Map projection for Antarctic (EPSG:3031) or Greenland (EPSG:3413)
