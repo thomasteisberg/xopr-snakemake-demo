@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 # Snakemake inputs/outputs
 input_frames = snakemake.input.frames
 output_file = snakemake.output.nc if hasattr(snakemake.output, 'nc') else snakemake.output[0]
+status_file = snakemake.output.status
 log_file = snakemake.log[0]
 
 # Parameters
@@ -83,25 +84,7 @@ try:
     frame = frame.resample(slow_time=resample_interval).mean()
 
     # Get layers
-    try:
-        layers = opr.get_layers_db(frame, include_geometry=False)
-    except Exception as e:
-        print(f"Warning: Could not retrieve layers: {e}", file=sys.stderr)
-        # Create empty dataset with metadata
-        reflectivity_dataset = xr.Dataset({
-            'surface_twtt': (('slow_time',), np.full(len(frame.slow_time), np.nan)),
-            'bed_twtt': (('slow_time',), np.full(len(frame.slow_time), np.nan)),
-            'surface_power_dB': (('slow_time',), np.full(len(frame.slow_time), np.nan)),
-            'bed_power_dB': (('slow_time',), np.full(len(frame.slow_time), np.nan)),
-        })
-        reflectivity_dataset.coords['slow_time'] = frame.slow_time
-        reflectivity_dataset.coords['Latitude'] = frame.Latitude
-        reflectivity_dataset.coords['Longitude'] = frame.Longitude
-        reflectivity_dataset.attrs['frame_id'] = stac_item['id']
-        reflectivity_dataset.attrs['processing_error'] = 'Could not retrieve layers'
-        reflectivity_dataset.to_netcdf(output_file)
-        sys.stderr.close()
-        sys.exit(0)
+    layers = opr.get_layers(frame, include_geometry=False)
 
     # Calculate margin in TWTT
     speed_of_light_in_ice = scipy.constants.c / np.sqrt(3.17)
@@ -159,8 +142,37 @@ try:
         plt.close()
         print(f"[{datetime.datetime.now()}] Saved debug plot to {debug_plot_path}", file=sys.stderr)
 
+    # Write success status
+    with open(status_file, 'w') as f:
+        f.write("success")
+    print(f"[{datetime.datetime.now()}] Frame processed successfully", file=sys.stderr)
+
 except Exception as e:
-    print(f"[{datetime.datetime.now()}] Error processing frame {frame_id}: {e}", file=sys.stderr)
-    raise
+    error_msg = f"{type(e).__name__}: {str(e)}"
+    print(f"[{datetime.datetime.now()}] Error processing frame {frame_id}: {error_msg}", file=sys.stderr)
+
+    # Create minimal output file to satisfy Snakemake
+    empty_ds = xr.Dataset()
+    empty_ds.attrs['frame_id'] = frame_id
+    empty_ds.attrs['processing_error'] = error_msg
+    empty_ds.to_netcdf(output_file)
+
+    if create_debug_plot and debug_plot_path:
+        # Create empty plot
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.text(0.5, 0.5, f'Processing Failed: {error_msg}', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize=20, color='red')
+        ax.set_title(f"Frame {frame_id}")
+        ax.axis('off')
+        plt.tight_layout()
+        plt.savefig(debug_plot_path, dpi=100)
+        plt.close()
+        print(f"[{datetime.datetime.now()}] Saved empty debug plot to {debug_plot_path}", file=sys.stderr)
+
+    # Write failure status
+    with open(status_file, 'w') as f:
+        f.write(f"failed: {error_msg}")
+
+    # Don't raise - allow workflow to continue
+    print(f"[{datetime.datetime.now()}] Frame marked as failed, workflow will continue", file=sys.stderr)
 
 sys.stderr.close()

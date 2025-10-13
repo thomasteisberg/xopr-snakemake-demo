@@ -39,9 +39,10 @@ checkpoint search_frames:
 rule process_frame:
     """Process individual radar frame to extract reflection powers."""
     input:
-        frames="results/search/frame_items.parquet",
+        frames=ancient("results/search/frame_items.parquet"),
     output:
         nc="results/processed_frames/frame_{frame_id}.nc",
+        status="results/processed_frames/frame_{frame_id}.status",
         plot="results/processed_frames/frame_{frame_id}.png" if config["processing"]["create_debug_plots"] else [],
     params:
         cache_dir=config["opr"]["cache_dir"],
@@ -85,6 +86,9 @@ rule create_results_map:
         frame_items="results/search/frame_items.parquet",
         frames=lambda wildcards: expand(
             "results/processed_frames/frame_{frame_id}.nc",
+            frame_id=get_frame_ids()),
+        status_files=lambda wildcards: expand(
+            "results/processed_frames/frame_{frame_id}.status",
             frame_id=get_frame_ids()),
     output:
         report("results/visualizations/results_map.html",

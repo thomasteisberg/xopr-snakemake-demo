@@ -6,9 +6,9 @@ opr:
 
 # Region selection parameters (using MEaSUREs Antarctic dataset)
 region:
-  name: "Dotson"  # Region name(s) - can be string or list
-  type: "FL"      # Type: GR (grounded), FL (floating), IS (island), or null for all
-  regions: null   # Regions: Peninsula, West, East, or null for all
+  name: ["David", "Drygalski"]  # Region name(s) - can be string or list
+  type: null      # Type: GR (grounded), FL (floating), IS (island), or null for all
+  regions: "East"   # Regions: Peninsula, West, East, or null for all
 
 # Frame search parameters
 search:
@@ -17,7 +17,7 @@ search:
 # Processing parameters
 processing:
   data_product: "CSARP_standard"  # Data product to load
-  resample_interval: "5s"  # Temporal resampling interval
+  resample_interval: "10s"  # Temporal resampling interval
   layer_margin_m: 50  # Margin around layers for peak detection (meters)
   create_debug_plots: true  # Create debug plots showing surface/bed power for each frame
   

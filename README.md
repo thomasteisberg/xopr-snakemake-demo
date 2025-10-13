@@ -84,6 +84,14 @@ snakemake --dag | dot -Tpng > workflow_dag.png
 snakemake --rulegraph | dot -Tpng > workflow_rules.png
 ```
 
+**Radar fetching failures**
+
+If a failure occurs in processing a radar frame (for example, no traced layers were available), the outputs are still created but will be blank. Each processed frame also produces a `.status` text file that either contains `success` or the exception that was raised. Counts of these exceptions can be easily queried with:
+
+```bash
+find results/processed_frames -name "*.status" -type f -exec cat {} \; -exec echo \; | grep -v '^$' | sort | uniq -c
+```
+
 ## Configuration
 
 Edit `config/config.yaml` to customize your analysis:
